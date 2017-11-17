@@ -1,0 +1,25 @@
+{
+  "name": "botbuilder-redux",
+  "version": "0.1.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon examples/simpleBot/bot",
+    "devtool-bot": "remotedev --hostname=localhost --port=8100 | nodemon examples/devToolBot/bot",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "redux": "^3.7.2"
+  },
+  "devDependencies": {
+    "botbuilder-core": "^4.0.0-h3.4",
+    "botbuilder-services": "^4.0.0-h3.5",
+    "lodash": "^4.17.4",
+    "remote-redux-devtools": "^0.5.0",
+    "remotedev-server": "^0.2.4",
+    "restify": "^6.3.2"
+  }
+}
