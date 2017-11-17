@@ -8,7 +8,7 @@ class ReduxMiddleware {
       received: null,
       responses: []
     }
-    this.middleware = middleware
+    this.middleware = middleware || ((value) => { return value })
     this.stateName = stateName || 'reduxState'
     this.storeName = storeSymbol || 'reduxStore'
   }

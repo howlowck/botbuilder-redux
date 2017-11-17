@@ -4,8 +4,6 @@ const { set, get } = require('lodash')
 const { BotReduxMiddleware, getStore, IncomingMessageReduxMiddleware, defaultRenderer } = require('../../src')
 const restify = require('restify')
 const { composeWithDevTools } = require('remote-redux-devtools') // if you see a weird Compilation error: https://github.com/uNetworking/uWebSockets/pull/526/files
-const remotedev = require('remotedev-server')
-remotedev({ hostname: 'localhost', port: 8100 })
 
 // Create server
 let server = restify.createServer()

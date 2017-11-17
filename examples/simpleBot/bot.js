@@ -18,23 +18,16 @@ server.post('/api/messages', adapter.listen())
 // Initialize bot
 
 const reducer = (prevState, action) => {
-  // if (action.type === 'REQUEST_NAME') {
-  //   return {
-  //     ...prevState,
-  //     requesting: 'name',
-  //     // received: null,
-  //     responses: [...prevState.responses, action.data]
-  //   }
-  // }
-
-  // if (action.type === 'RECEIVED_NAME') {
-  //   return {
-  //     ...prevState,
-  //     requesting: null,
-  //     // received: action.data,
-  //     responses: [...prevState.responses, action.data]
-  //   }
-  // }
+  /*
+    In this reducer, the intended state shape looks like this:
+    {
+      requesting: string|null, // the name in dot notation, once the user answers, is set by lodash using the name
+      responses: array<string|RichMedia|AdaptiveCard>, //the list of responses to be "rendered" by the renderer
+      info: {
+        name: string // the value is set by lodash (line 37)
+      }
+    }
+  */
   if (action.type === 'INCOMING_MESSAGE') {
     if (action.data.text === 'nevermind') {
       return {...prevState, requesting: null, responses: ['ok..']}
@@ -71,13 +64,14 @@ const bot = new Bot(adapter)
     .use(new BotReduxMiddleware(reducer))
     .use(new IncomingMessageReduxMiddleware())
     .onReceive(context => {
+      // console.log('hi')
       if (context.request.type !== 'message') {
         return
       }
+
       const store = getStore(context)
 
       if (!get(store.getState(), 'info.name')) {
-        console.log('here!!')
         store.dispatch({type: 'SEND_TEXT', data: `What is Your name?`})
         store.dispatch({type: 'ASK', data: 'info.name'})
       } else {
