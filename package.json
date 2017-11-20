@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "nodemon examples/simpleBot/bot",
-    "devtool-bot": "remotedev --hostname=localhost --port=8100 | nodemon examples/devToolBot/bot",
+    "devtool-bot": "nodemon examples/devToolBot/bot",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

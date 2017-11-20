@@ -1,26 +1,38 @@
-const { createStore, applyMiddleware } = require('redux')
 
 class ReduxMiddleware {
-  constructor (reducer, defaultState, middleware, storeSymbol, stateName) {
-    this.reducer = reducer
-    this.defaultState = defaultState || {
-      requesting: null,
-      received: null,
-      responses: []
-    }
-    this.middleware = middleware || ((value) => { return value })
-    this.stateName = stateName || 'reduxState'
-    this.storeName = storeSymbol || 'reduxStore'
+  constructor (createStore, stateName = 'reduxState', storeName = 'reduxStore') {
+    this.createStore = createStore
+    this.stateName = stateName
+    this.storeName = storeName
+  }
+
+  getInitialState (context) {
+    return context.storage.read(['redux'])
+      .then(storState => {
+        if (Object.getOwnPropertyNames(storState).length === 0) {
+          return null
+        }
+        delete storState.redux.eTag // removes eTag
+        return storState.redux
+      })
   }
 
   contextCreated (context) {
-    const store = createStore(this.reducer, context.state.conversation[this.stateName] || this.defaultState, this.middleware(applyMiddleware()))
-    context[this.storeName] = store
+    return this.getInitialState(context)
+      .then(stateFromStorage => {
+        context[this.storeName] = this.createStore(stateFromStorage)
+      })
   }
 
   postActivity (context, activities) {
-    context[this.storeName].dispatch({type: 'CLEAR_RESPONSES'})
-    context.state.conversation[this.stateName] = context[this.storeName].getState()
+    const state = context[this.storeName].getState()
+    console.log('postActivity', state)
+    return context.storage.write({
+      redux: {
+        ...state,
+        eTag: '*'
+      }
+    })
   }
 }
 

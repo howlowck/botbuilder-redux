@@ -1,7 +1,7 @@
 # Botbuilder Redux Middleware
 
 ## Motivation
-The goal using Redux is to make the behavior of the bot deterministic, given the state and the series of action being dispatched. This lessens the cognitive load when developing the flow as the author of the bot only has to focus on the single state at a given time. Passing only serializable data into using pure functions (what redux is all about) also makes testing the bot behavior incredibly easy. 
+The goal using Redux is to make the behavior of the bot deterministic, given the state and the series of action being dispatched. This lessens the cognitive load when developing the flow as the author of the bot only has to focus on the single state at a given time. Passing only serializable data into pure functions (what redux is all about) also makes testing the bot behavior incredibly easy. 
 
 On top of all this, we get the rich ecosystem of tools for debugging, visualization.  For example, we can use [Remote Redux Devtools](https://github.com/zalmoxisus/remote-redux-devtools) to view all the transitions in our bot!
 

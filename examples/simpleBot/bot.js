@@ -1,5 +1,6 @@
 const { Bot, BotStateManager, MemoryStorage } = require('botbuilder-core')
 const { BotFrameworkAdapter } = require('botbuilder-services')
+const { createStore } = require('redux')
 const { set, get } = require('lodash')
 const { BotReduxMiddleware, getStore, IncomingMessageReduxMiddleware, defaultRenderer } = require('../../src')
 const restify = require('restify')
@@ -29,12 +30,14 @@ const reducer = (prevState, action) => {
     }
   */
   if (action.type === 'INCOMING_MESSAGE') {
-    if (action.data.text === 'nevermind') {
+    if (action.data === 'nevermind') {
       return {...prevState, requesting: null, responses: ['ok..']}
     }
 
     if (prevState.requesting) { // if we are requesting something then we can use lodash set to put it in our state
-      return set({...prevState}, prevState.requesting, action.data.text)
+      const newState = set({...prevState}, prevState.requesting, action.data)
+      newState.requesting = null
+      return newState
     }
 
     return {...prevState}
@@ -60,11 +63,12 @@ const reducer = (prevState, action) => {
 
 const bot = new Bot(adapter)
     .use(new MemoryStorage())
-    .use(new BotStateManager())
-    .use(new BotReduxMiddleware(reducer))
+    .use(new BotReduxMiddleware((stateFromStorage) => {
+      const defaultState = {requesting: null, responses: []}
+      return createStore(reducer, stateFromStorage || defaultState)
+    }))
     .use(new IncomingMessageReduxMiddleware())
     .onReceive(context => {
-      // console.log('hi')
       if (context.request.type !== 'message') {
         return
       }
