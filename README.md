@@ -37,7 +37,7 @@ This is the only concept that is outside of the traditional Redux system.  Typic
 
 ## How to Use
 
-The `BotReduxMiddleware` is meant to be unopininated on _how_ you use your redux store.  All it does is storing the state to storage for the next turn, and recreating the store from the stored state.  (The package doesn't even require redux)  It's up to the user to compose the store, and the middleware does the wiring between `context.storage` and the redux store between turns.
+The `BotReduxMiddleware` is meant to be unopininated on _how_ you use your redux store.  All it does is storing the state to storage for the next turn, and recreating the store from the stored state.  (The package doesn't even require redux)  It's up to the user to compose the store, and the middleware does the wiring between `context.storage` and the redux store between turns.  (Another way to look at this Middleware is that it replaces the BotStateManager, instead we use Redux as the state manager)
 
 ```js
 const {BotReduxMiddleware, getStore} = require('botbuilder-redux') //getStore is simply a helper function
@@ -73,22 +73,26 @@ The simple bot does not use any complex middleware.  It simply asks you for a na
 The bot spins up a dev server and includes a community-supported redux-devtool middleware.  When you start the bot, and use your remote redux devTools, you can see the state of the bot on any given turn.  Unfortunately, because the store is created on every turn, the dev tool will not have a full history of the conversation (only the current turn).
 
 ### `examples/convoBot` (Super Readable Prompt Flow)
-Using the power of async/await, and the "single source of truth" nature of the redux state, we can create some interesting abstractions on top of the easy-to-understand primitive!
+We can now create some interesting abstractions on top of the easy-to-understand redux paradigm!
 
-we can create "prompt" flow like this:
+This "prompt" flow is readable:
 
 ```js
 
 const bookFlightTopic = async (context) => {
   const store = getStore(context)
   const convo = new Conversation('flight', store)
+  
   const dest = convo.ask('Where would you like to go?', 'flight.destination')
   const depart = convo.ask('When would you depart?', 'flight.departDate')
   const ret = convo.ask('When would you return?', 'flight.returnDate')
+
   if (dest && depart && ret) {
     // Book the flight
-    const confirmationText = fetch('https://baconipsum.com/api/?type=all-meat&sentences=1&start-with-lorem=1')
+    const apiPath = 'https://baconipsum.com/api/?type=all-meat&sentences=1&start-with-lorem=1'
+    const confirmationObj = await fetch(apiPath).then(res => res.json())
     convo.reply(`Ok! Your flight is booked!`)
+    convo.reply(`Your bacon-loving agent says: ${confirmationObj[0]}`)
   }
 }
 ```
