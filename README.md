@@ -1,7 +1,7 @@
 # Botbuilder Redux Middleware
 
 ## Motivation
-The goal using Redux is to make the behavior of the bot deterministic, given the state and the series of action being dispatched. This lessens the cognitive load when developing the flow as the author of the bot only has to focus on the single state at a given time. Passing only serializable data into pure functions (what redux is all about) also makes testing the bot behavior incredibly easy. 
+The goal using Redux is to make the behavior of the bot predictable, given the state and the series of action being dispatched. This lessens the cognitive load when developing the flow as the author of the bot only has to focus on the single state at a given time. Passing only serializable data into pure functions (what redux is all about) also makes testing the bot behavior incredibly easy. 
 
 On top of all this, we get the rich ecosystem of tools for debugging, visualization.  For example, we can use [Remote Redux Devtools](https://github.com/zalmoxisus/remote-redux-devtools) to view all the transitions in our bot!
 
@@ -106,5 +106,8 @@ By building the examples, there are some conventions that emerged.  Of course th
 There is a `IncomingMessageReduxMiddleware` bot middleware that you can include, which will automatically fire the two actions for you. You can then decide how to handle the two actions in your reducer.
 
 ### TODO
-- [] example of `combineReducer` separated by topics
-- [] example of topic 
+- [] example of an Reducer oriented bot (`combineReducer` separated by topics)
+- [] example of topic switch (upon completion of one topic)
+- [] example of testing the bot in code
+- [] example of LUIS Intents
+- [] example of input validation (by looking at the state)
