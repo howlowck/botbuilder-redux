@@ -7,7 +7,6 @@ function getStore (ctx, storeProp = 'reduxStore') {
 
 function defaultRenderer (ctx, store) {
   store.getState().responses.forEach((response) => {
-    console.log(response)
     ctx.reply(response)
   })
 }

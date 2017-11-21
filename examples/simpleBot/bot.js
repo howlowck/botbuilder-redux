@@ -1,8 +1,8 @@
-const { Bot, BotStateManager, MemoryStorage } = require('botbuilder-core')
+const { Bot, MemoryStorage } = require('botbuilder-core')
 const { BotFrameworkAdapter } = require('botbuilder-services')
 const { createStore } = require('redux')
 const { set, get } = require('lodash')
-const { BotReduxMiddleware, getStore, IncomingMessageReduxMiddleware, defaultRenderer } = require('../../src')
+const { BotReduxMiddleware, getStore } = require('../../src')
 const restify = require('restify')
 
 // Create server
@@ -67,22 +67,26 @@ const bot = new Bot(adapter)
       const defaultState = {requesting: null, responses: []}
       return createStore(reducer, stateFromStorage || defaultState)
     }))
-    .use(new IncomingMessageReduxMiddleware())
     .onReceive(context => {
       if (context.request.type !== 'message') {
         return
       }
 
-      const store = getStore(context)
+      const {dispatch, getState} = getStore(context)
 
-      if (!get(store.getState(), 'info.name')) {
-        store.dispatch({type: 'SEND_TEXT', data: `What is Your name?`})
-        store.dispatch({type: 'ASK', data: 'info.name'})
+      dispatch({type: 'CLEAR_RESPONSES'})
+      dispatch({type: 'INCOMING_MESSAGE', data: context.request.text})
+
+      if (!get(getState(), 'info.name')) {
+        dispatch({type: 'SEND_TEXT', data: `What is Your name?`})
+        dispatch({type: 'ASK', data: 'info.name'})
       } else {
-        const name = get(store.getState(), 'info.name')
-        store.dispatch({type: 'SEND_TEXT', data: `Hello ${name}!`})
+        const name = get(getState(), 'info.name')
+        dispatch({type: 'SEND_TEXT', data: `Hello ${name}!`})
       }
 
-      defaultRenderer(context, store)
+      getState().responses.forEach((response) => {
+        context.reply(response)
+      })
     }
 )

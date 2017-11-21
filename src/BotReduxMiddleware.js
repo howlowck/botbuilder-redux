@@ -1,5 +1,4 @@
-
-class ReduxMiddleware {
+class BotReduxMiddleware {
   constructor (createStore, stateName = 'reduxState', storeName = 'reduxStore') {
     this.createStore = createStore
     this.stateName = stateName
@@ -26,7 +25,6 @@ class ReduxMiddleware {
 
   postActivity (context, activities) {
     const state = context[this.storeName].getState()
-    console.log('postActivity', state)
     return context.storage.write({
       redux: {
         ...state,
@@ -36,4 +34,4 @@ class ReduxMiddleware {
   }
 }
 
-module.exports = ReduxMiddleware
+module.exports = BotReduxMiddleware

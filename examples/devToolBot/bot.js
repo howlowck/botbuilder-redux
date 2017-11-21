@@ -29,15 +29,15 @@ const bot = new Bot(adapter)
       if (context.request.type !== 'message') {
         return
       }
-      const store = getStore(context)
+      const {dispatch, getState} = getStore(context)
 
-      if (!get(store.getState(), 'info.name')) {
-        store.dispatch({type: 'SEND_TEXT', data: `What is Your name?`})
-        store.dispatch({type: 'ASK', data: 'info.name'})
+      if (!get(getState(), 'info.name')) {
+        dispatch({type: 'SEND_TEXT', data: `What is Your name?`})
+        dispatch({type: 'ASK', data: 'info.name'})
       } else {
-        const name = get(store.getState(), 'info.name')
-        store.dispatch({type: 'SEND_TEXT', data: `Hello ${name}!`})
+        const name = get(getState(), 'info.name')
+        dispatch({type: 'SEND_TEXT', data: `Hello ${name}!`})
       }
 
-      defaultRenderer(context, store)
+      defaultRenderer(context, getStore(context))
     })
