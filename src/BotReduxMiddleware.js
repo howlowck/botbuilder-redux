@@ -1,19 +1,24 @@
 class BotReduxMiddleware {
-  constructor (createStore, stateName = 'reduxState', storeName = 'reduxStore') {
+  constructor (createStore, storeName = 'reduxStore') {
     this.createStore = createStore
-    this.stateName = stateName
     this.storeName = storeName
   }
 
   getInitialState (context) {
-    return context.storage.read(['redux'])
+    const reduxKey = this.getReduxKey(context)
+    return context.storage.read([reduxKey])
       .then(storState => {
         if (Object.getOwnPropertyNames(storState).length === 0) {
           return null
         }
-        delete storState.redux.eTag // removes eTag
-        return storState.redux
+        delete storState[reduxKey].eTag // removes eTag
+        return storState[reduxKey]
       })
+  }
+
+  getReduxKey (context) {
+    const convoRef = context.conversationReference
+    return 'conversation/' + convoRef.conversation.id + '/redux'
   }
 
   contextCreated (context) {
@@ -25,12 +30,12 @@ class BotReduxMiddleware {
 
   postActivity (context, activities) {
     const state = context[this.storeName].getState()
-    return context.storage.write({
-      redux: {
-        ...state,
-        eTag: '*'
-      }
-    })
+    const changes = {}
+    changes[this.getReduxKey(context)] = {
+      ...state,
+      eTag: '*'
+    }
+    return context.storage.write(changes)
   }
 }
 
