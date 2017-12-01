@@ -1,15 +1,30 @@
-const { createStore, applyMiddleware } = require('redux')
-const { set } = require('lodash')
+import { createStore, applyMiddleware, Action, AnyAction, Store as ReduxStore } from 'redux'
+import { set } from 'lodash'
 const { composeWithDevTools } = require('remote-redux-devtools')
 
 const composeEnhancers = composeWithDevTools({ realtime: true, port: 8100 })
 
-const defaultState = {
+export namespace State {
+  export type IncomingMessage = string | null
+  export type Responses = string[]
+  export type Requesting = string | null
+
+  export interface All {
+    incomingMessage: IncomingMessage,
+    responses: Responses,
+    requesting: Requesting
+  }
+}
+
+export type Store = ReduxStore<State.All>
+
+const defaultState: State.All = {
+  incomingMessage: null,
   requesting: null,
   responses: []
 }
 
-const reducer = (prevState, action) => {
+const reducer = (prevState: State.All, action: AnyAction) => {
   if (action.type === 'INCOMING_MESSAGE') {
     if (action.data === 'nevermind') {
       return {...prevState, requesting: null, responses: ['ok..']}
@@ -39,9 +54,9 @@ const reducer = (prevState, action) => {
     }
   }
 
-  return {...prevState}
+  return prevState
 }
 
-module.exports = (stateFromStorage) => {
+export default (stateFromStorage: State.All) => {
   return createStore(reducer, stateFromStorage || defaultState, composeEnhancers(applyMiddleware()))
 }

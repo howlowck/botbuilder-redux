@@ -38,7 +38,6 @@ Mutate the state which has previous turn data, **It describes how the bot will c
 ### Renderer
 This is the only concept that is outside of the traditional Redux system.  Typically this is done in the view layer.  Technically this does not have to be part of this library, and is only included for convinence.  A renderer is simply a function that takes in the context and the state, and **"renders" the responses to the user**.
 
-------------
 
 ## How to Use
 
@@ -65,6 +64,13 @@ const bot = new Bot(adapter)
       // control your bot with redux state
     })
 ```
+------------
+## Getting Started with the Examples
+1. Clone/Pull Down this Repo
+2. Run `npm install`
+3. Run `npm run build:dev` (or `npm run build:dev:watch`)
+4. Run `npm run simplebot` or `npm run devtoolbot`
+5. Check it out in the Bot Emulator
 
 ------------
 ## Examples

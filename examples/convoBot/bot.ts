@@ -1,12 +1,15 @@
-const { Bot, MemoryStorage } = require('botbuilder-core')
-const { BotFrameworkAdapter } = require('botbuilder-services')
-const { get } = require('lodash')
-const { BotReduxMiddleware, getStore, IncomingMessageReduxMiddleware, defaultRenderer } = require('../../src')
+import { Bot, MemoryStorage } from 'botbuilder-core'
+import { BotFrameworkAdapter } from 'botbuilder-services'
+import { get, includes } from 'lodash'
+import { BotReduxMiddleware, getStore, IncomingMessageReduxMiddleware, defaultRenderer } from '../../src'
+import { Store as ReduxStore } from 'redux'
+// import * as restify from 'restify' //restify post method and adapter.listen() have differen types :(
 const restify = require('restify')
-const createStore = require('./createStore')
-const fetch = require('node-fetch')
+import createStore, {State, Store} from './createStore'
+import fetch from 'node-fetch'
 
-var remotedev = require('remotedev-server') // if you see a weird Compilation error: https://github.com/uNetworking/uWebSockets/pull/526/files
+var remotedev = require('remotedev-server') 
+// if you see a weird Compilation error: https://github.com/uNetworking/uWebSockets/pull/526/files
 remotedev({ hostname: 'localhost', port: 8100 })
 
 // Create server
@@ -16,17 +19,27 @@ server.listen(process.env.port || 3978, () => {
 })
 
 // Create connector
-const adapter = new BotFrameworkAdapter({ appId: process.env.MICROSOFT_APP_ID, appPassword: process.env.MICROSOFT_APP_PASSWORD })
+const adapter = new BotFrameworkAdapter({ 
+  appId: process.env.MICROSOFT_APP_ID, 
+  appPassword: process.env.MICROSOFT_APP_PASSWORD 
+})
+
 server.post('/api/messages', adapter.listen())
 
-class Conversation {
-  constructor (convoName, store) {
+class Conversation<T extends State.All> {
+  protected convoName: string
+  protected store: ReduxStore<T>
+  protected questions: {
+    [key: string]: (result: string) => string
+  }
+
+  constructor (convoName: string, store: ReduxStore<T>) {
     this.convoName = convoName
     this.store = store
     this.questions = {}
   }
 
-  ask (message, type) {
+  ask (message: string, type: string): null|string {
     const {getState, dispatch} = this.store
 
     if (!this.questions[type]) {
@@ -36,7 +49,7 @@ class Conversation {
     if (!(getState().requesting)) { // if state is not requesting anything
       dispatch({type: 'SEND_TEXT', data: message})
       dispatch({type: 'ASK', data: type})
-      return
+      return null
     }
 
     if (getState().requesting === type) { // if state is requesting this ask type (question)
@@ -47,7 +60,7 @@ class Conversation {
     return get(getState(), type)
   }
 
-  reply (message) {
+  reply (message: string | null): void {
     const {dispatch} = this.store
     if (message) {
       dispatch({type: 'SEND_TEXT', data: message})
@@ -55,8 +68,8 @@ class Conversation {
   }
 }
 
-function text (strings, ...keys) { // tagged template literal
-  if (keys.includes(undefined)) {
+function text (strings: TemplateStringsArray, ...keys: Array<string|null>) { // tagged template literal
+  if (includes(keys, undefined)) {
     return null
   }
 
@@ -67,9 +80,9 @@ function text (strings, ...keys) { // tagged template literal
   return str
 }
 
-const infoRequest = (context) => {
-  const store = getStore(context)
-  const convo = new Conversation('info', store)
+const infoRequest = (context: BotContext) => {
+  const store = getStore<State.All>(context)
+  const convo = new Conversation<State.All>('info', store)
   const name = convo.ask('Hi, whats your name?', 'info.name')
   const email = convo.ask('Whats your email?', 'info.email')
   const birthday = convo.ask('Whats your birthday?', 'info.bd')
@@ -77,15 +90,16 @@ const infoRequest = (context) => {
   return Promise.resolve()
 }
 
-const bookFlightTopic = async (context) => {
-  const store = getStore(context)
-  const convo = new Conversation('flight', store)
+const bookFlightTopic = async (context: BotContext) => {
+  const store = getStore<State.All>(context)
+  const convo = new Conversation<State.All>('flight', store)
   const dest = convo.ask('Where would you like to go?', 'flight.destination')
   const depart = convo.ask('When would you depart?', 'flight.departDate')
   const ret = convo.ask('When would you return?', 'flight.returnDate')
   if (dest && depart && ret) {
     // Book the flight
-    const confirmationObj = await fetch('https://baconipsum.com/api/?type=all-meat&sentences=1&start-with-lorem=1').then(res => res.json())
+    const confirmationObj = await fetch('https://baconipsum.com/api/?type=all-meat&sentences=1&start-with-lorem=1')
+      .then(res => res.json())
     const confirmationText = confirmationObj[0]
     convo.reply(`Ok! Your flight is booked!`)
     convo.reply(`Your bacon-loving agent says: ${confirmationText}`)
@@ -104,13 +118,13 @@ bot.onReceive(context => {
   }
 
   let currentTopic
-  const state = getStore(context).getState()
+  const state = getStore<State.All>(context).getState()
   const currentInfoKeys = Object.getOwnPropertyNames(get(state, 'info', {}))
 
   if (
-      currentInfoKeys.includes('name') &&
-      currentInfoKeys.includes('email') &&
-      currentInfoKeys.includes('bd')
+      includes(currentInfoKeys, 'name') &&
+      includes(currentInfoKeys, 'email') &&
+      includes(currentInfoKeys, 'bd')
     ) {
     // all the information is gathered
     currentTopic = bookFlightTopic(context)
@@ -119,6 +133,6 @@ bot.onReceive(context => {
   }
 
   return currentTopic.then(() => {
-    defaultRenderer(context, getStore(context))
+    defaultRenderer(context, getStore<State.All>(context))
   })
 })

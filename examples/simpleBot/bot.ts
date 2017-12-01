@@ -1,9 +1,21 @@
-const { Bot, MemoryStorage } = require('botbuilder-core')
-const { BotFrameworkAdapter } = require('botbuilder-services')
-const { createStore } = require('redux')
-const { set, get } = require('lodash')
-const { BotReduxMiddleware, getStore } = require('../../src')
+import { Bot, MemoryStorage } from 'botbuilder-core'
+import { BotFrameworkAdapter } from 'botbuilder-services'
+import { createStore, Reducer as ReduxReducer, AnyAction, Store as ReduxStore, StoreCreator } from 'redux'
+import { set, get } from 'lodash'
+import { BotReduxMiddleware, getStore } from '../../src'
 const restify = require('restify')
+
+namespace State {
+  export type Responses = string[]
+  export type Requesting = string | null
+
+  export interface All {
+    responses: Responses,
+    requesting: Requesting
+  }
+}
+
+type StoreCreatorFromStorage<S> =  (stateFromStorage: S) => ReduxStore<S>
 
 // Create server
 let server = restify.createServer()
@@ -12,13 +24,17 @@ server.listen(process.env.port || 3978, () => {
 })
 
 // Create connector
-const adapter = new BotFrameworkAdapter({ appId: process.env.MICROSOFT_APP_ID, appPassword: process.env.MICROSOFT_APP_PASSWORD })
+const adapter = new BotFrameworkAdapter(
+  { appId: process.env.MICROSOFT_APP_ID, appPassword: process.env.MICROSOFT_APP_PASSWORD }
+)
 server.post('/api/messages', adapter.listen())
 
 // const middlewareProp = Symbol('myDialog')
 // Initialize bot
 
-const reducer = (prevState, action) => {
+type Reducer = ReduxReducer<State.All>
+
+const reducer: Reducer = (prevState: State.All, action: AnyAction) : State.All => {
   /*
     In this reducer, the intended state shape looks like this:
     {
@@ -61,18 +77,20 @@ const reducer = (prevState, action) => {
   return {...prevState}
 }
 
-const bot = new Bot(adapter)
+const storeCreator: StoreCreatorFromStorage<State.All> = (stateFromStorage: State.All) => {
+  const defaultState: State.All = {requesting: null, responses: []}
+  return createStore(reducer, stateFromStorage || defaultState)
+}
+
+new Bot(adapter)
     .use(new MemoryStorage())
-    .use(new BotReduxMiddleware((stateFromStorage) => {
-      const defaultState = {requesting: null, responses: []}
-      return createStore(reducer, stateFromStorage || defaultState)
-    }))
-    .onReceive(context => {
+    .use(new BotReduxMiddleware<State.All>(storeCreator))
+    .onReceive((context: BotContext) => {
       if (context.request.type !== 'message') {
         return
       }
 
-      const {dispatch, getState} = getStore(context)
+      const {dispatch, getState} = getStore<State.All>(context)
 
       dispatch({type: 'CLEAR_RESPONSES'})
       dispatch({type: 'INCOMING_MESSAGE', data: context.request.text})
@@ -85,7 +103,12 @@ const bot = new Bot(adapter)
         dispatch({type: 'SEND_TEXT', data: `Hello ${name}!`})
       }
 
-      getState().responses.forEach((response) => {
+      const responses  = getState().responses
+      if ( ! responses) {
+        return Promise.resolve()
+      }
+
+      responses.forEach((response: string) => {
         context.reply(response)
       })
     }

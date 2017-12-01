@@ -1,11 +1,12 @@
-const { Bot, MemoryStorage } = require('botbuilder-core')
-const { BotFrameworkAdapter } = require('botbuilder-services')
-const { get } = require('lodash')
-const { BotReduxMiddleware, getStore, IncomingMessageReduxMiddleware, defaultRenderer } = require('../../src')
+import { Bot, MemoryStorage } from 'botbuilder-core'
+import { BotFrameworkAdapter } from 'botbuilder-services'
+import { get } from 'lodash'
+import { BotReduxMiddleware, getStore, IncomingMessageReduxMiddleware, defaultRenderer } from '../../src'
 const restify = require('restify')
-const createStore = require('./createStore')
+import createStore, { State } from './createStore'
 
-var remotedev = require('remotedev-server') // if you see a weird Compilation error: https://github.com/uNetworking/uWebSockets/pull/526/files
+// if you see a weird Compilation error: https://github.com/uNetworking/uWebSockets/pull/526/files
+var remotedev = require('remotedev-server') 
 remotedev({ hostname: 'localhost', port: 8100 })
 
 // Create server
@@ -15,7 +16,9 @@ server.listen(process.env.port || 3978, () => {
 })
 
 // Create connector
-const adapter = new BotFrameworkAdapter({ appId: process.env.MICROSOFT_APP_ID, appPassword: process.env.MICROSOFT_APP_PASSWORD })
+const adapter = new BotFrameworkAdapter(
+  { appId: process.env.MICROSOFT_APP_ID, appPassword: process.env.MICROSOFT_APP_PASSWORD }
+)
 server.post('/api/messages', adapter.listen())
 
 // Initialize bot
@@ -23,13 +26,13 @@ const bot = new Bot(adapter)
     .use(new MemoryStorage())
     // .use(new BotStateManager()) // Does NOT Require State Manager
     // .use(new BotReduxMiddleware(reducer, null, composeEnhancers))
-    .use(new BotReduxMiddleware(createStore))
+    .use(new BotReduxMiddleware<State.All>(createStore))
     .use(new IncomingMessageReduxMiddleware())
-    .onReceive(context => {
+    .onReceive((context: BotContext) => {
       if (context.request.type !== 'message') {
         return
       }
-      const {dispatch, getState} = getStore(context)
+      const {dispatch, getState} = getStore<State.All>(context)
 
       if (!get(getState(), 'info.name')) {
         dispatch({type: 'SEND_TEXT', data: `What is Your name?`})
@@ -39,5 +42,5 @@ const bot = new Bot(adapter)
         dispatch({type: 'SEND_TEXT', data: `Hello ${name}!`})
       }
 
-      defaultRenderer(context, getStore(context))
+      defaultRenderer(context, getStore<State.All>(context))
     })

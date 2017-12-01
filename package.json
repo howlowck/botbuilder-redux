@@ -1,22 +1,27 @@
 {
   "name": "botbuilder-redux",
   "version": "0.1.0",
-  "description": "",
-  "main": "src/index.js",
+  "description": "A Redux Middleware for your Botbuilder V4.  Manage your conversation state however you want!",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon examples/simpleBot/bot",
-    "devtool-bot": "nodemon examples/devToolBot/bot",
+    "simplebot": "nodemon build/examples/simpleBot/bot",
+    "devtoolbot": "nodemon build/examples/devToolBot/bot",
+    "build": "tsc",
+    "build:dev": "tsc --p tsconfig.example.json",
+    "build:dev:watch": "tsc --p tsconfig.example.json -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {},
+  "license": "MIT",
   "peerDependencies": {
     "botbuilder-core": "^4.0.0-h3.3"
   },
   "devDependencies": {
-    "botbuilder-core": "^4.0.0-h3.3",
+    "@types/lodash": "^4.14.86",
+    "@types/node-fetch": "^1.6.7",
+    "@types/restify": "^5.0.6",
+    "botbuilder-core": "^4.0.0-h3.4",
     "botbuilder-services": "^4.0.0-h3.5",
     "lodash": "^4.17.4",
     "node-fetch": "^1.7.3",
