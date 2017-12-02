@@ -2,7 +2,8 @@
   "name": "botbuilder-redux",
   "version": "1.0.0",
   "description": "A Redux Middleware for your Botbuilder V4.  Manage your conversation state however you want!",
-  "main": "dist/index.js",
+  "main": "dist/index",
+  "typings": "dist/index",
   "scripts": {
     "simplebot": "nodemon build/examples/simpleBot/bot",
     "devtoolbot": "nodemon build/examples/devToolBot/bot",
@@ -15,12 +16,14 @@
   "author": "",
   "license": "MIT",
   "peerDependencies": {
-    "botbuilder-core": "^4.0.0-h3.3"
+    "botbuilder-core": "^4.0.0-h3.3",
+    "redux": "^3.7.2"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.86",
     "@types/restify": "^5.0.6",
     "botbuilder-core": "^4.0.0-h3.4",
+    "botbuilder-services": "^4.0.0-h3.5",
     "lodash": "^4.17.4",
     "redux": "^3.7.2",
     "restify": "^6.3.2"
