@@ -1,6 +1,6 @@
 {
   "name": "botbuilder-redux",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A Redux Middleware for your Botbuilder V4.  Manage your conversation state however you want!",
   "main": "dist/index.js",
   "scripts": {
