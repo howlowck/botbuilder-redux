@@ -2,7 +2,7 @@ import { Bot, MemoryStorage } from 'botbuilder-core'
 import { BotFrameworkAdapter } from 'botbuilder-services'
 import { createStore, Reducer as ReduxReducer, AnyAction, Store as ReduxStore, StoreCreator } from 'redux'
 import { set, get } from 'lodash'
-import { BotReduxMiddleware, getStore } from '../../src'
+import BotReduxMiddleware, { getStore } from '../../src'
 const restify = require('restify')
 
 namespace State {

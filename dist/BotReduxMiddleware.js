@@ -68,6 +68,8 @@
             return this.getInitialState(context)
                 .then((stateFromStorage) => {
                 this.saveStore(this.createStore(stateFromStorage), context);
+            }).catch((error) => {
+                console.error(error);
             });
         }
         postActivity(context, activities) {

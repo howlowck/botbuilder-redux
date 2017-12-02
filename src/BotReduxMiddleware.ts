@@ -1,5 +1,6 @@
 import { Store as ReduxStore, Reducer } from 'redux';
 import { Activity, StoreItem, StoreItems, Middleware } from 'botbuilder-core';
+import { ExceptionInfo } from '_debugger';
 
 // export interface DefaultState {
 //   [key: string]: any
@@ -85,6 +86,8 @@ class BotReduxMiddleware<S extends StoreItem> implements Middleware {
     return this.getInitialState(context)
       .then((stateFromStorage: S) => {
         this.saveStore(this.createStore(stateFromStorage), context)
+      }).catch((error: any) => {
+        console.error(error)
       })
   }
 
