@@ -41,10 +41,14 @@ This is the only concept that is outside of the traditional Redux system.  Typic
 
 ## How to Use
 
-The `BotReduxMiddleware` is meant to be unopininated on _how_ you use your redux store.  All it does is storing the state to storage for the next turn, and recreating the store from the stored state.  (The package doesn't even require redux)  It's up to the user to compose the store, and the middleware does the wiring between `context.storage` and the redux store between turns.  (Another way to look at this Middleware is that it replaces the BotStateManager, instead we use Redux as the state manager)
+**`npm install --save botbuilder-redux`**
+
+The `BotReduxMiddleware` is meant to be unopininated on _how_ you use your redux store.  All it does is storing the state to `context.storage` for the next turn, and recreating the store from the stored state.  (The package doesn't even require redux)  It's up to the user to compose the store, and the middleware does the wiring between `context.storage` and the redux store between turns.  (Another way to look at this Middleware is that it replaces the BotStateManager, instead we use Redux as the state manager)
+
+By default, you can retrieve the redux store from `context.reduxStore`, but you can specify your own setter function
 
 ```js
-const {BotReduxMiddleware, getStore} = require('botbuilder-redux') //getStore is simply a helper function
+const BotReduxMiddleware, { getStore } = require('botbuilder-redux') //getStore is simply a helper function
 
 const createStoreFunction = (stateFromStorage) => {
   // User specifies the default State if nothing is from the storage (very first turn)
@@ -65,64 +69,19 @@ const bot = new Bot(adapter)
     })
 ```
 ------------
-## Getting Started with the Examples
+## Getting Started with the Simple Bot Example
+The simple bot uses the simpliest implementation of the BotReduxMiddleware.  And It simply asks you for a name, and greets you after you answer.
+
 1. Clone/Pull Down this Repo
 2. Run `npm install`
 3. Run `npm run build:dev` (or `npm run build:dev:watch`)
-4. Run `npm run simplebot` or `npm run devtoolbot`
+4. Run `npm run simplebot`
 5. Check it out in the Bot Emulator
 
 ------------
-## Examples
+## Other Examples
 
-Take a look at the `examples` directory to see how you can use the middleware in various scenarios and different ways of implementing a bot using the Redux Middleware
-
-### `examples/simpleBot` (Simple Bot)
-The simple bot does not use any complex middleware.  It simply asks you for a name, and greets you after you answer.
-
-### `examples/devToolBot` (Bot with Redux Dev Tool)
-The bot spins up a dev server and includes a community-supported redux-devtool middleware.  When you start the bot, and use your remote redux devTools, you can see the state of the bot on any given turn.  Unfortunately, because the store is created on every turn, the dev tool will not have a full history of the conversation (only the current turn).
-
-### `examples/convoBot` (Super Readable Prompt Flow)
-We can now create some interesting abstractions on top of the easy-to-understand redux paradigm!
-
-This "prompt" flow is readable:
-
-```js
-
-const bookFlightTopic = async (context) => {
-  const store = getStore(context)
-  const convo = new Conversation('flight', store)
-  
-  const dest = convo.ask('Where would you like to go?', 'flight.destination')
-  const depart = convo.ask('When would you depart?', 'flight.departDate')
-  const ret = convo.ask('When would you return?', 'flight.returnDate')
-
-  if (dest && depart && ret) {
-    // Book the flight
-    const apiPath = 'https://baconipsum.com/api/?type=all-meat&sentences=1&start-with-lorem=1'
-    const confirmationObj = await fetch(apiPath).then(res => res.json())
-    convo.reply(`Ok! Your flight is booked!`)
-    convo.reply(`Your bacon-loving agent says: ${confirmationObj[0]}`)
-  }
-}
-```
-![devtools](assets/devtoolsCapture.jpg)
-
--------------
-## Some Convention (from the examples):
-
-By building the examples, there are some conventions that emerged.  Of course these are all not required to use the middleware, but will certainly make your bot development experience easier.
-
-### Some Default Actions
-* `{type: "INCOMING_MESSAGE", data: userMessage}` - message from the user
-* `{type: "CLEAR_RESPONSES"}` - clear the responses
-
-There is a `IncomingMessageReduxMiddleware` bot middleware that you can include, which will automatically fire the two actions for you. You can then decide how to handle the two actions in your reducer.
+This package is meant to be extremely thin.  There is some established conventions that will help you get started on building a bot quickly.  A package called [`botbuilder-redux-common`](https://haoluo12.visualstudio.com/botbuilder-redux-common), has a set of helper functions and middleware.  Please refer to that package for more examples.
 
 ### TODO
-- [] example of an Reducer oriented bot (`combineReducer` separated by topics)
-- [] example of topic switch (upon completion of one topic)
-- [] example of testing the bot in code
-- [] example of LUIS Intents
-- [] example of input validation (by looking at the state)
+- [] add tests
