@@ -1,5 +1,7 @@
 # Botbuilder Redux Middleware
 
+** This package is targeted for Botbuilder v4 **
+
 ## Motivation
 The goal using Redux is to make the behavior of the bot predictable, given the state and the series of action being dispatched. This lessens the cognitive load when developing the flow as the author of the bot only has to focus on the single state at a given time. Passing only serializable data into pure functions (what redux is all about) also makes testing the bot behavior incredibly easy. 
 
@@ -82,6 +84,3 @@ The simple bot uses the simpliest implementation of the BotReduxMiddleware.  And
 ## Other Examples
 
 This package is meant to be extremely thin.  There is some established conventions that will help you get started on building a bot quickly.  A package called [`botbuilder-redux-common`](https://haoluo12.visualstudio.com/botbuilder-redux-common), has a set of helper functions and middleware.  Please refer to that package for more examples.
-
-### TODO
-- [] add tests

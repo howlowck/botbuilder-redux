@@ -6,7 +6,6 @@
   "typings": "dist/index",
   "scripts": {
     "simplebot": "nodemon build/examples/simpleBot/bot",
-    "devtoolbot": "nodemon build/examples/devToolBot/bot",
     "build": "tsc",
     "build:dev": "tsc --p tsconfig.example.json",
     "build:dev:watch": "tsc --p tsconfig.example.json -w",
@@ -16,18 +15,18 @@
   "author": "",
   "license": "MIT",
   "peerDependencies": {
-    "botbuilder-core": "^4.0.0-h3.3",
+    "botbuilder-node": "^4.0.0-m1.2",
     "redux": "^3.7.2"
   },
-  "repository" : { 
-    "type" : "git",
-    "url" : "https://haoluo12.visualstudio.com/botbuilder-redux"
+  "repository": {
+    "type": "git",
+    "url": "https://haoluo12.visualstudio.com/botbuilder-redux"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.86",
     "@types/restify": "^5.0.6",
-    "botbuilder-core": "^4.0.0-h3.4",
-    "botbuilder-services": "^4.0.0-h3.5",
+    "botbuilder-node": "^4.0.0-m1.2",
+    "botbuilder-services": "^4.0.0-m1.2",
     "lodash": "^4.17.4",
     "redux": "^3.7.2",
     "restify": "^6.3.2"

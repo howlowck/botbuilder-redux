@@ -45,7 +45,6 @@ class BotReduxMiddleware<S extends StoreItem> implements Middleware {
   protected createStore: (stateFromStorage: S) => ReduxStore<S>
   protected getStore: (context: BotContext) => ReduxStore<S> 
   protected saveStore: (store: ReduxStore<S>, context: BotContext) => void
-  protected storeName: string
   
   constructor (
     createStore: (stateFromStorage: S) => ReduxStore<S>, 
