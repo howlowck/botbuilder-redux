@@ -55,15 +55,15 @@ class BotReduxMiddleware {
         }
         return 'conversation/' + convoRef.conversation.id + '/redux';
     }
-    contextCreated(context) {
+    contextCreated(context, next) {
         return this.getInitialState(context)
             .then((stateFromStorage) => {
             this.saveStore(this.createStore(stateFromStorage), context);
         }).catch((error) => {
             console.error(error);
-        });
+        }).then(next);
     }
-    postActivity(context, activities) {
+    postActivity(context, activities, next) {
         // Ensure storage
         if (!context.storage) {
             return Promise.reject(new Error(`BotReduxMiddleware: context.storage not found.`));
@@ -72,7 +72,8 @@ class BotReduxMiddleware {
         const changes = {};
         state.eTag = '*';
         changes[this.getReduxKey(context)] = state;
-        return context.storage.write(changes);
+        return context.storage.write(changes)
+            .then(() => next(activities));
     }
 }
 exports.default = BotReduxMiddleware;

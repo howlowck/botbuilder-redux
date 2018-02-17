@@ -1,10 +1,5 @@
 import { Store as ReduxStore, Reducer } from 'redux';
-import { Activity, StoreItem, StoreItems, Middleware } from 'botbuilder-core';
-import { ExceptionInfo } from '_debugger';
-
-// export interface DefaultState {
-//   [key: string]: any
-// }
+import { Activity, StoreItem, StoreItems, Middleware, ConversationResourceResponse } from 'botbuilder';
 
 declare global {
   export interface BotContext {
@@ -81,26 +76,27 @@ class BotReduxMiddleware<S extends StoreItem> implements Middleware {
     return 'conversation/' + convoRef.conversation.id + '/redux'
   }
 
-  contextCreated (context: BotContext) {
+  contextCreated (context: BotContext, next: () => Promise<void>) {
     return this.getInitialState(context)
       .then((stateFromStorage: S) => {
         this.saveStore(this.createStore(stateFromStorage), context)
       }).catch((error: any) => {
         console.error(error)
-      })
+      }).then(next)
   }
 
-  postActivity (context: BotContext, activities: Partial<Activity>[]) {
+  postActivity (context: BotContext, activities: Activity[], 
+      next: (newActivities?: Partial<Activity>[]) => Promise<ConversationResourceResponse[]>) {
     // Ensure storage
     if (!context.storage) { 
       return Promise.reject(new Error(`BotReduxMiddleware: context.storage not found.`)); 
     }
-
     const state = this.getStore(context).getState()
     const changes: StoreItems = {}
     state.eTag = '*'
     changes[this.getReduxKey(context)] = state
     return context.storage.write(changes)
+      .then(() => next(activities))
   }
 }
 
