@@ -83,4 +83,4 @@ The simple bot uses the simpliest implementation of the BotReduxMiddleware.  And
 ------------
 ## Other Examples
 
-This package is meant to be extremely thin.  There is some established conventions that will help you get started on building a bot quickly.  A package called [`botbuilder-redux-common`](https://haoluo12.visualstudio.com/botbuilder-redux-common), has a set of helper functions and middleware.  Please refer to that package for more examples.
+This package is meant to be extremely thin.  There is some established conventions that will help you get started on building a bot quickly.  A package called [`botbuilder-redux-common`](https://github.com/howlowck/botbuilder-redux-common), has a set of helper functions and middleware.  Please refer to that package for more examples.
