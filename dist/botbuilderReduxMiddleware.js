@@ -31,7 +31,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function BotbuilderReduxMiddleware(conversationState, createStoreFunction, namespace = 'reduxStore', convoStateKey = '__REDUX_STATE__') {
     return {
         onTurn: (context, next) => __awaiter(this, void 0, void 0, function* () {
-            const convoStateObj = conversationState.get(context) || { [convoStateKey]: {} };
+            const convoStateObj = conversationState.get(context) || { [convoStateKey]: null };
             const stateFromConvoState = convoStateObj[convoStateKey];
             const store = createStoreFunction(stateFromConvoState);
             context.services.set(namespace, store);

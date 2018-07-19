@@ -30,7 +30,7 @@ export default function BotbuilderReduxMiddleware(
 ) {
   return {
     onTurn: async (context: TurnContext, next: () => any) => {
-      const convoStateObj = conversationState.get(context) || {[convoStateKey]: {}}
+      const convoStateObj = conversationState.get(context) || {[convoStateKey]: null}
       const stateFromConvoState = convoStateObj[convoStateKey]
       const store = createStoreFunction(stateFromConvoState)
       context.services.set(namespace, store)
