@@ -1,18 +1,12 @@
-import { Bot, MemoryStorage } from 'botbuilder'
-import { BotFrameworkAdapter } from 'botbuilder-services'
+import { BotFrameworkAdapter, MemoryStorage, ConversationState, StoreItem, Activity } from 'botbuilder'
 import { createStore, Reducer as ReduxReducer, AnyAction, Store as ReduxStore, StoreCreator } from 'redux'
 import { set, get } from 'lodash'
-import BotReduxMiddleware, { getStore } from '../../src'
+import botbuilderReduxMiddleware, { getStore } from '../../src'
 const restify = require('restify')
 
-namespace State {
-  export type Responses = string[]
-  export type Requesting = string | null
-
-  export interface All {
-    responses: Responses,
-    requesting: Requesting
-  }
+interface State extends StoreItem {
+  responses: string[],
+  requesting: string | null
 }
 
 type StoreCreatorFromStorage<S> =  (stateFromStorage: S) => ReduxStore<S>
@@ -27,14 +21,11 @@ server.listen(process.env.port || 3978, () => {
 const adapter = new BotFrameworkAdapter(
   { appId: process.env.MICROSOFT_APP_ID, appPassword: process.env.MICROSOFT_APP_PASSWORD }
 )
-server.post('/api/messages', adapter.listen())
 
-// const middlewareProp = Symbol('myDialog')
-// Initialize bot
+const conversationState = new ConversationState(new MemoryStorage());
+type Reducer = ReduxReducer<State>
 
-type Reducer = ReduxReducer<State.All>
-
-const reducer: Reducer = (prevState: State.All, action: AnyAction) : State.All => {
+const reducer: Reducer = (prevState: State, action: AnyAction) : State => {
   /*
     In this reducer, the intended state shape looks like this:
     {
@@ -77,23 +68,23 @@ const reducer: Reducer = (prevState: State.All, action: AnyAction) : State.All =
   return {...prevState}
 }
 
-const storeCreator: StoreCreatorFromStorage<State.All> = (stateFromStorage: State.All) => {
-  const defaultState: State.All = {requesting: null, responses: []}
+const storeCreator: StoreCreatorFromStorage<State> = (stateFromStorage: State) => {
+  const defaultState: State = {requesting: null, responses: []}
   return createStore(reducer, stateFromStorage || defaultState)
 }
 
-new Bot(adapter)
-    .use(new MemoryStorage())
-    .use(new BotReduxMiddleware<State.All>(storeCreator))
-    .onReceive((context: BotContext) => {
-      if (context.request.type !== 'message') {
-        return
-      }
+const storeKey = Symbol('reduxStoreKey')
+adapter.use(conversationState);
+adapter.use(botbuilderReduxMiddleware(conversationState, storeCreator, storeKey))
 
-      const {dispatch, getState} = getStore<State.All>(context)
-
+server.post('/api/messages', (req, res) => {
+  adapter.processActivity(req, res, (context) => {
+    // This bot is only handling Messages
+    if (context.activity.type === 'message') {
+      const {dispatch, getState} = getStore<State>(context, storeKey)
       dispatch({type: 'CLEAR_RESPONSES'})
-      dispatch({type: 'INCOMING_MESSAGE', data: context.request.text})
+      console.log(context.activity.text)
+      dispatch({type: 'INCOMING_MESSAGE', data: context.activity.text})
 
       if (!get(getState(), 'info.name')) {
         dispatch({type: 'SEND_TEXT', data: `What is Your name?`})
@@ -108,8 +99,15 @@ new Bot(adapter)
         return Promise.resolve()
       }
 
-      responses.forEach((response: string) => {
-        context.reply(response)
-      })
+      const messages: Partial<Activity>[] = responses.map(text => ({
+        type: 'message',
+        text
+      }))
+
+      return context.sendActivities(messages);
+    } else {
+        // Echo back the type of activity the bot detected if not of type message
+      return context.sendActivity(`[${context.activity.type} event detected]`);
     }
-)
+  });
+})

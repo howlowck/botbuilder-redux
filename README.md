@@ -50,25 +50,40 @@ The `BotReduxMiddleware` is meant to be unopininated on _how_ you use your redux
 By default, you can retrieve the redux store from `context.reduxStore`, but you can specify your own setter function
 
 ```js
-const BotReduxMiddleware, { getStore } = require('botbuilder-redux') //getStore is simply a helper function
+const {createStore} = require('redux')
+const botbuilderReduxMiddleware, { getStore } = require('botbuilder-redux') //getStore is simply a helper function
 
 const createStoreFunction = (stateFromStorage) => {
   // User specifies the default State if nothing is from the storage (very first turn)
   const defaultState = {requesting: null, responses: []} 
   return createStore(reducer, stateFromStorage || defaultState)
 }
-...
-const bot = new Bot(adapter)
-    .use(new MemoryStorage())
-    .use(new BotReduxMiddleware((stateFromStorage) => {
-      const defaultState = {requesting: null, responses: []}
-      return createStore(reducer, stateFromStorage || defaultState)
-    }))
-    .onReceive((context) => {
-      reduxStore = getStore(context)
-      const {getState} = reduxStore
-      // control your bot with redux state
-    })
+
+adapter.use(conversationState);
+adapter.use(botbuilderReduxMiddleware(conversationState, storeCreator))
+
+server.post('/api/messages', (req, res) => {
+  adapter.processActivity(req, res, (context) => {
+    // This bot is only handling Messages
+    if (context.activity.type === 'message') {
+      const {dispatch, getState} = getStore<State>(context, storeKey)
+      // Use the Redux system however you'd like
+      
+      // At the end...
+      const responses  = getState().responses
+      if ( ! responses) {
+        return Promise.resolve()
+      }
+
+      const messages: Partial<Activity>[] = responses.map(text => ({
+        type: 'message',
+        text
+      }))
+
+      return context.sendActivities(messages);
+    }
+  });
+})
 ```
 ------------
 ## Getting Started with the Simple Bot Example

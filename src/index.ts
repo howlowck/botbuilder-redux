@@ -1,8 +1,10 @@
 import { Store } from 'redux';
+import { TurnContext } from 'botbuilder';
+import botbuilderReduxMiddleware from './botbuilderReduxMiddleware'
 
-import BotReduxMiddleware from './BotReduxMiddleware'
-export default BotReduxMiddleware 
+export default botbuilderReduxMiddleware 
 
-const getStore = <T>(context: BotContext) : Store<T> => context.reduxStore
+const getStore = <T>(context: TurnContext, namespace: string | symbol = 'reduxStore') 
+  : Store<T> => context.services.get(namespace)
 
 export {getStore}
